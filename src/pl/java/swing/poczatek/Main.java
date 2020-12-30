@@ -2,6 +2,7 @@ package pl.java.swing.poczatek;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.font.FontRenderContext;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -40,11 +41,30 @@ public class Main {
         });
 */
 
-        EventQueue.invokeLater(() -> {
+/*        EventQueue.invokeLater(() -> {
             JFrame frame = new DrawFrame();
             frame.setVisible(true);
             frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
             frame.setTitle("JAVA FIGURY");
+        });*/
+
+
+        // Drukowanie wszystkich dostepnych czcionek w systenie
+        String[] fontNames = GraphicsEnvironment
+                .getLocalGraphicsEnvironment()
+                .getAvailableFontFamilyNames();
+
+        for (String fontName : fontNames) {
+            System.out.println(fontName);
+        }
+        System.out.println("Dostepnych jest " + fontNames.length + " czcionek.");
+
+        // Czcionka, wysrodkowanie tekstu
+        EventQueue.invokeLater(() ->{
+            JFrame frame = new FontFrame();
+            frame.setTitle("Test czcionek");
+            frame.setVisible(true);
+            frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         });
     }
 }
@@ -124,6 +144,8 @@ class NotHelloWorldComponent extends JComponent {
     }
 }
 
+
+// --------------------------------------------------------------------------------- //
 // RYSOWANIE FIGUR
 
 class DrawFrame extends JFrame {
@@ -131,6 +153,9 @@ class DrawFrame extends JFrame {
         add(new DrawComponent());
         setLocationByPlatform(true);
         pack();
+
+        Image image = new ImageIcon("icon.gif").getImage();
+        setIconImage(image);
     }
 }
 
@@ -138,7 +163,7 @@ class DrawComponent extends JComponent {
     private static final int DEFAULT_WIDTH = 400;
     private static final int DEFAULT_HEIGHT = 400;
 
-    public void paint(Graphics g) {
+    public void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
 
         // Rysowanie prostokata
@@ -148,24 +173,33 @@ class DrawComponent extends JComponent {
         double height = 150;
 
         Rectangle2D rectangle2D = new Rectangle2D.Double(leftX, topY, width, height);
-        g2.draw(rectangle2D);
+        //g2.draw(rectangle2D);
+        g2.setPaint(Color.RED);
+        g2.fill(rectangle2D);
 
         // Rysowanie elipsy
         Ellipse2D ellipse2D = new Ellipse2D.Double();
         ellipse2D.setFrame(rectangle2D);
-        g2.draw(ellipse2D);
+        //g2.draw(ellipse2D);
+        g2.setPaint(Color.GREEN);
+        g2.fill(ellipse2D);
 
         // Rysowanie przekatnej
+        g2.setPaint(Color.YELLOW);
         g2.draw(new Line2D.Double(leftX, topY, leftX + width, topY + height));
 
         // Rysowanie kola z takim samym srodkiem
         //Point2D point2D = new Point2D.Double(rectangle2D.getCenterX(), rectangle2D.getCenterY());
+        g2.setPaint(Color.BLACK);
         double centerX = rectangle2D.getCenterX();
         double centerY = rectangle2D.getCenterY();
         double radius = 150;
         Ellipse2D circle = new Ellipse2D.Double();
         circle.setFrameFromCenter(centerX, centerY, centerX + radius, centerY + radius);
+        //g2.setPaint(Color.BLUE);
+        //g2.fill(circle);
         g2.draw(circle);
+
 
         // Rysowanie punktow co 2 za pomoca drawLine
         for (int i = 0; i < 400; i++) {
@@ -174,7 +208,68 @@ class DrawComponent extends JComponent {
             }
         }
 
-        g2.drawString("Tu jest srodek", DEFAULT_HEIGHT/2, DEFAULT_WIDTH/2);
+        g2.drawString("Tu jest srodek", DEFAULT_HEIGHT / 2, DEFAULT_WIDTH / 2);
+
+        // Niestandardowy kolor
+        g2.setPaint(new Color(0, 128, 128));
+        g2.drawString("Niestandardowy kolor", 10, 10);
+
+
+    }
+
+    public Dimension getPreferredSize() {
+        return new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    }
+}
+
+class FontFrame extends JFrame {
+    public FontFrame() {
+        add(new FontComponent());
+        pack();
+        setLocationByPlatform(true);
+    }
+}
+
+class FontComponent extends JComponent {
+    private static final int DEFAULT_WIDTH = 300;
+    private static final int DEFAULT_HEIGHT = 200;
+
+    public void paintComponent(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g;
+
+        String message = "Zegnaj swiecie";
+
+        // Ustawienie czcionki
+        Font font = new Font("Serif", Font.BOLD+Font.ITALIC, 36);
+        g2.setFont(font);
+
+        // Sprawdzenie rozmiaru tekstu
+        FontRenderContext context = g2.getFontRenderContext();
+        Rectangle2D bounds = font.getStringBounds(message, context);
+
+        // set(x, y) = lewy gorny rog
+        double x = (getWidth() - bounds.getWidth()) / 2;
+        double y = (getHeight() - bounds.getHeight()) / 2;
+
+        // Dodanie wydluzenia gornego do y w celu siegniecia do linii bazowej
+
+        double ascent = -bounds.getY();
+        double baseY = y + ascent;
+
+        // Rysowanie komunikatu
+        g2.setPaint(Color.PINK);
+        g2.drawString(message, (int) x, (int) baseY);
+
+        g2.setPaint(Color.LIGHT_GRAY);
+
+        // Rysowanie linii bazowej
+
+        g2.draw(new Line2D.Double(x, baseY, x + bounds.getWidth(), baseY));
+
+        // Rysowanie otaczajacego teskt prostokat
+        Rectangle2D rectangle2D = new Rectangle2D.Double(x, y, bounds.getWidth(), bounds.getHeight());
+        g2.draw(rectangle2D);
+
     }
 
     public Dimension getPreferredSize() {
