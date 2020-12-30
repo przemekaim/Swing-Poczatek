@@ -7,6 +7,7 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
     public static void main(String[] args) {
@@ -50,7 +51,7 @@ public class Main {
 
 
         // Drukowanie wszystkich dostepnych czcionek w systenie
-        String[] fontNames = GraphicsEnvironment
+ /*       String[] fontNames = GraphicsEnvironment
                 .getLocalGraphicsEnvironment()
                 .getAvailableFontFamilyNames();
 
@@ -65,6 +66,13 @@ public class Main {
             frame.setTitle("Test czcionek");
             frame.setVisible(true);
             frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        });*/
+
+        EventQueue.invokeLater(() -> {
+            JFrame frame = new ImageFrame();
+            frame.setVisible(true);
+            frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+            frame.setTitle("Grafika");
         });
     }
 }
@@ -274,5 +282,54 @@ class FontComponent extends JComponent {
 
     public Dimension getPreferredSize() {
         return new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    }
+}
+
+class ImageFrame extends JFrame {
+    public ImageFrame() {
+        add(new ImageComponent());
+        pack();
+        setLocationByPlatform(true);
+    }
+}
+
+class ImageComponent extends JComponent{
+    private static final int DEFAULT_WIDHT = 300;
+    private static final int DEFAULT_HEIGHT = 200;
+
+    private Image image;
+
+    public ImageComponent() {
+        image = new ImageIcon("blue-ball.gif").getImage();
+    }
+
+    public void paintComponent(Graphics g) {
+        // Jezeli nie ma rysnku to wroc
+        if (image == null) return;
+
+        int imageWidth = image.getWidth(this);
+        int imageHeight = image.getHeight(this);
+
+        // Rysowanie obrazu w lewym gornym rogu
+
+        g.drawImage(image, 0, 0, null);
+
+        // Powielanie obrazu w obrebie komponentu
+
+        for (int i = 0; i * imageWidth <= getWidth(); i++)
+            for (int j = 0; j * imageHeight <= getHeight(); j++)
+                if (i +j > 0) g.copyArea(0, 0, imageWidth, imageHeight, i * imageWidth, j * imageHeight);
+
+
+        // Rysowanie wlasnego obrazu
+        Image img2 = new ImageIcon("kaguya.jpg").getImage();
+        g.drawImage(img2, 0, 0 , null);
+        // Rysowanie obrazu dopasownego do podstawowych rozmiarow ramki
+        g.drawImage(img2, 0, 0, DEFAULT_WIDHT, DEFAULT_HEIGHT, null);
+
+    }
+
+    public Dimension getPreferredSize() {
+        return new Dimension(DEFAULT_WIDHT, DEFAULT_HEIGHT);
     }
 }
